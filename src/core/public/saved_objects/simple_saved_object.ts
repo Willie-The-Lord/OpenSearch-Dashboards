@@ -31,7 +31,7 @@
 import { set } from '@elastic/safer-lodash-set';
 import { get, has } from 'lodash';
 import { SavedObject as SavedObjectType } from '../../server';
-import { SavedObjectsClientContract } from './saved_objects_client';
+import { SavedObjectsClient } from './saved_objects_client';
 
 /**
  * This class is a very simple wrapper for SavedObjects loaded from the server
@@ -51,10 +51,10 @@ export class SimpleSavedObject<T = unknown> {
   public migrationVersion: SavedObjectType<T>['migrationVersion'];
   public error: SavedObjectType<T>['error'];
   public references: SavedObjectType<T>['references'];
-  public updated_at: SavedObjectType<T>['updated_at'];
+  public updated_at: SavedObjectType<T>['updated_at']
 
   constructor(
-    private client: SavedObjectsClientContract,
+    private client: SavedObjectsClient,
     {
       id,
       type,
