@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useCallback, Fragment, useEffect, useRef } from 'react';
+import React, { useCallback, Fragment, useEffect, useRef, useState } from 'react';
 import {
   EuiTitle,
   EuiFlexGroup,
@@ -14,6 +14,7 @@ import {
 } from '@elastic/eui';
 import { FormattedMessage } from '@osd/i18n/react';
 import { VisOptionsProps } from 'src/plugins/vis_default_editor/public';
+import { SimpleSavedObject } from 'src/core/public/saved_objects/simple_saved_object';
 import { useOpenSearchDashboards } from '../../opensearch_dashboards_react/public';
 import { Card, DrilldownServices, DrilldownVisParams } from './types';
 import { CardForm } from './components/card_form';
@@ -33,75 +34,33 @@ function DrilldownOptions({ stateParams, setValue }: VisOptionsProps<DrilldownVi
       cardName: 'newDrilldownCard',
       cardDescription: 'newDrilldownCard',
       cardUrl: 'newDrilldownCard',
+      cardType: 'newDrilldownCard',
+      cardDashboardID: 'newDrilldownCard',
     };
     setValue('cards', [...stateParams.cards, newCard]);
   }, [stateParams.cards, setValue]);
+
+  const [dashboards, setDashboards] = useState<Array<SimpleSavedObject<any>>>([]);
 
   const {
     services: { http, savedObjects },
   } = useOpenSearchDashboards<DrilldownServices>();
 
-  interface List {
-    value: string;
-    inputDisplay: string;
-    dropdownDisplay: JSX.Element; // Adjust the type based on the actual type of dropdownDisplay
-  }
-
-  const options = useRef<List[]>([
-    {
-      value: '1',
-      inputDisplay: 'Option 1',
-      dropdownDisplay: (
-        <Fragment>
-          <strong>Name</strong>
-          <EuiText size="s" color="subdued">
-            <p className="euiTextColor--subdued">
-              id
-              <br />
-              text
-            </p>
-          </EuiText>
-        </Fragment>
-      ),
-    },
-  ]);
-
-  const saved = useRef<any>();
-  // const index = useRef<any>();
-
   useEffect(() => {
-    const fetchData = async () => {
-      saved.current = savedObjects?.client.find({
+    const getSaved = async () => {
+      const saved = await savedObjects?.client.find({
         type: 'dashboard',
       });
-      const path = (await saved.current).savedObjects[0].client
-        .getPath(['dashboard', (await saved.current).savedObjects[0].id])
-        .substring(28);
-      const savedObjectURL = http.basePath.prepend('/app/dashboards#/view/' + path);
-      options.current = [
-        {
-          value: savedObjectURL,
-          inputDisplay: 'yes',
-          dropdownDisplay: (
-            <Fragment>
-              <strong>Name</strong>
-              <EuiText size="s" color="subdued">
-                <p className="euiTextColor--subdued">
-                  id
-                  <br />
-                  text
-                </p>
-              </EuiText>
-            </Fragment>
-          ),
-        },
-      ];
+      setDashboards(saved?.savedObjects);
     };
-    fetchData();
-  });
 
-  const activeVisName = '';
-  const handleVisTypeChange = () => {};
+    getSaved();
+  }, [savedObjects.client, http.basePath]);
+
+  const options = dashboards.map((dashboard) => ({
+    value: dashboard.id,
+    inputDisplay: dashboard.attributes.title,
+  }));
 
   return (
     <EuiFlexGroup
@@ -114,14 +73,7 @@ function DrilldownOptions({ stateParams, setValue }: VisOptionsProps<DrilldownVi
       {stateParams.cards &&
         stateParams.cards.map((card, index) => (
           <>
-            <CardForm
-              index={index}
-              card={card}
-              updateCard={updateCard}
-              options={options.current}
-              valueOfSelected={activeVisName}
-              onChange={handleVisTypeChange}
-            />
+            <CardForm index={index} card={card} updateCard={updateCard} options={options} />
           </>
         ))}
       <EuiButtonEmpty size="xs" iconType="plusInCircleFilled" onClick={addCardForm}>

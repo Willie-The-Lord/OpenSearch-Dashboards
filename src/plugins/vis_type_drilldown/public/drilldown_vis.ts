@@ -15,7 +15,6 @@ export const drillDownVisDefinition = {
   isAccessible: true,
   icon: 'logstashFilter',
   description: i18n.translate('visTypeDrilldown.drilldownDescription', {
-
     defaultMessage: 'I LOVE drilldown!',
   }),
   toExpressionAst,
@@ -26,6 +25,8 @@ export const drillDownVisDefinition = {
           cardName: '',
           cardDescription: '',
           cardUrl: '',
+          cardType: '',
+          cardDashboardID: '',
         },
       ],
     },
