@@ -491,7 +491,7 @@ export class SavedObjectsClient {
     return new SimpleSavedObject(this, options);
   }
 
-  private getPath(path: Array<string | undefined>): string {
+  public getPath(path: Array<string | undefined>): string {
     return resolveUrl(API_BASE_URL, join(...path));
   }
 
